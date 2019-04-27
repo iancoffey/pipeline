@@ -19,6 +19,14 @@ package v1alpha1
 // ClusterTaskLister.
 type ClusterTaskListerExpansion interface{}
 
+// EventBindingListerExpansion allows custom methods to be added to
+// EventBindingLister.
+type EventBindingListerExpansion interface{}
+
+// EventBindingNamespaceListerExpansion allows custom methods to be added to
+// EventBindingNamespaceLister.
+type EventBindingNamespaceListerExpansion interface{}
+
 // PipelineListerExpansion allows custom methods to be added to
 // PipelineLister.
 type PipelineListerExpansion interface{}

@@ -29,6 +29,10 @@ func (c *FakeTektonV1alpha1) ClusterTasks() v1alpha1.ClusterTaskInterface {
 	return &FakeClusterTasks{c}
 }
 
+func (c *FakeTektonV1alpha1) EventBindings(namespace string) v1alpha1.EventBindingInterface {
+	return &FakeEventBindings{c, namespace}
+}
+
 func (c *FakeTektonV1alpha1) Pipelines(namespace string) v1alpha1.PipelineInterface {
 	return &FakePipelines{c, namespace}
 }

@@ -79,7 +79,7 @@ type TektonListenerStatus struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// TektonListenerList contains a list of PipelineRun
+// TektonListenerList contains a list of TektonListeners
 type TektonListenerList struct {
 	metav1.TypeMeta `json:",inline"`
 	// +optional

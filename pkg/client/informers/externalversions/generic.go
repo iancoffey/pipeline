@@ -52,6 +52,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=tekton.dev, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("clustertasks"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Tekton().V1alpha1().ClusterTasks().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("eventbindings"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Tekton().V1alpha1().EventBindings().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("pipelines"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Tekton().V1alpha1().Pipelines().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("pipelineresources"):

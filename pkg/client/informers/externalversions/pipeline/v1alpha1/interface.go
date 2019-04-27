@@ -23,6 +23,8 @@ import (
 type Interface interface {
 	// ClusterTasks returns a ClusterTaskInformer.
 	ClusterTasks() ClusterTaskInformer
+	// EventBindings returns a EventBindingInformer.
+	EventBindings() EventBindingInformer
 	// Pipelines returns a PipelineInformer.
 	Pipelines() PipelineInformer
 	// PipelineResources returns a PipelineResourceInformer.
@@ -51,6 +53,11 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // ClusterTasks returns a ClusterTaskInformer.
 func (v *version) ClusterTasks() ClusterTaskInformer {
 	return &clusterTaskInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// EventBindings returns a EventBindingInformer.
+func (v *version) EventBindings() EventBindingInformer {
+	return &eventBindingInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Pipelines returns a PipelineInformer.

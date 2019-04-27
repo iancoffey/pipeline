@@ -17,6 +17,8 @@ package v1alpha1
 
 type ClusterTaskExpansion interface{}
 
+type EventBindingExpansion interface{}
+
 type PipelineExpansion interface{}
 
 type PipelineResourceExpansion interface{}
