@@ -21,10 +21,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var (
-	tektonListenerControllerName = "TektonListener"
-)
-
 // TektonListenerSpec defines the desired state of PipelineRun
 type TektonListenerSpec struct {
 	PipelineRef PipelineRef `json:"pipelineRef"`

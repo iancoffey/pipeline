@@ -21,10 +21,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var (
-	eventBindingControllerName = "EventBinding"
-)
-
 // EventBindingSpec defines the desired state of the EventBinding
 type EventBindingSpec struct {
 	// The tekton pipeline this will reference
@@ -32,17 +28,22 @@ type EventBindingSpec struct {
 	// The source we are creating this binding to handle
 	SourceRef SourceRef `json:"sourceref"`
 	// The resources that will be created/deleted for this binding
-	ResourceTemplates []PipelineResourceSpec `json:"resourceref"`
+	ResourceTemplates []PipelineResource `json:"resourceref"`
 	// The resources to bind the PipelineRun to
 	Resources []PipelineResourceBinding `json:"resources"`
 	// Params is a list of parameter names and values for use with the PipelineRun
 	Params []Param `json:"params"`
-	// Time after which the Pipeline times out. Defaults to never.
+	// Time after which the Pipeline times out. Defaults to never
 	Timeout *metav1.Duration `json:"timeout,omitempty"`
+	// Reference to the specific type of event we want to handle
+	EventRef EventRef `json:"eventref,omitempty"`
+	// +optional
+	ServiceAccount string `json:"serviceAccount"`
 }
 
 type SourceRef struct {
-	Name string
+	Name       string `json:"name,omitempty"`
+	APIVersion string `json:"apiversion,omitempty"`
 }
 
 // +genclient
@@ -83,4 +84,10 @@ type EventBindingList struct {
 	// +optional
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []EventBinding `json:"items"`
+}
+
+type EventRef struct {
+	EventName  string `json:"eventname,inline"`
+	EventType  string `json:"eventtype,inline"`
+	APIVersion string `json:"apiversion,omitempty"`
 }

@@ -31,9 +31,10 @@ import (
 	sharedclientset "github.com/knative/pkg/client/clientset/versioned"
 	"github.com/knative/pkg/controller"
 	"github.com/tektoncd/pipeline/pkg/reconciler"
-	"github.com/tektoncd/pipeline/pkg/reconciler/v1alpha1/tektonlistener"
+	"github.com/tektoncd/pipeline/pkg/reconciler/v1alpha1/eventbinding"
 	"github.com/tektoncd/pipeline/pkg/reconciler/v1alpha1/pipelinerun"
 	"github.com/tektoncd/pipeline/pkg/reconciler/v1alpha1/taskrun"
+	"github.com/tektoncd/pipeline/pkg/reconciler/v1alpha1/tektonlistener"
 	"github.com/tektoncd/pipeline/pkg/system"
 
 	"github.com/knative/pkg/configmap"
@@ -110,6 +111,7 @@ func main() {
 	resourceInformer := pipelineInformerFactory.Tekton().V1alpha1().PipelineResources()
 	podInformer := kubeInformerFactory.Core().V1().Pods()
 	tektonListenerInformer := pipelineInformerFactory.Tekton().V1alpha1().TektonListeners()
+	eventbindingInformer := pipelineInformerFactory.Tekton().V1alpha1().EventBindings()
 
 	pipelineInformer := pipelineInformerFactory.Tekton().V1alpha1().Pipelines()
 	pipelineRunInformer := pipelineInformerFactory.Tekton().V1alpha1().PipelineRuns()
@@ -137,6 +139,12 @@ func main() {
 		kubeClient,
 		tektonListenerInformer,
 	)
+	ebc := eventbinding.NewController(
+		opt,
+		kubeClient,
+		eventbindingInformer,
+		tektonListenerInformer,
+	)
 
 	// Build all of our controllers, with the clients constructed above.
 	controllers := []*controller.Impl{
@@ -144,6 +152,7 @@ func main() {
 		trc,
 		prc,
 		lrc,
+		ebc,
 	}
 	timeoutHandler.SetTaskRunCallbackFunc(trc.Enqueue)
 	timeoutHandler.SetPipelineRunCallbackFunc(prc.Enqueue)
@@ -167,6 +176,7 @@ func main() {
 		resourceInformer.Informer().HasSynced,
 		podInformer.Informer().HasSynced,
 		pipelineInformer.Informer().HasSynced,
+		eventbindingInformer.Informer().HasSynced,
 	} {
 		if ok := cache.WaitForCacheSync(stopCh, synced); !ok {
 			logger.Fatalf("failed to wait for cache at index %v to sync", i)
