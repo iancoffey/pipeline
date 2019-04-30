@@ -144,6 +144,7 @@ func main() {
 		kubeClient,
 		eventbindingInformer,
 		tektonListenerInformer,
+		pipelineInformer,
 	)
 
 	// Build all of our controllers, with the clients constructed above.

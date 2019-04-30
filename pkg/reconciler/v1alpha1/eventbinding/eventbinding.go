@@ -64,6 +64,7 @@ func NewController(
 	kubeclientset kubernetes.Interface,
 	eventBindingInformer informers.EventBindingInformer,
 	tektonListenerInformer informers.TektonListenerInformer,
+	pipelineListerInformer informers.PipelineInformer,
 ) *controller.Impl {
 	// Enrich the logs with controller name
 	logger, _ := logging.NewLogger("", "event-binding")
@@ -73,6 +74,7 @@ func NewController(
 		kubeclientset:        kubeclientset,
 		eventBindingLister:   eventBindingInformer.Lister(),
 		tektonListenerLister: tektonListenerInformer.Lister(),
+		pipelineLister:       pipelineListerInformer.Lister(),
 		logger:               logger,
 	}
 	impl := controller.NewImpl(r, logger, "EventBinding",
@@ -80,7 +82,7 @@ func NewController(
 
 	logger.Info("Setting up event-binding event handler")
 	// Set up an event handler for when EventBinding resources change
-	tektonListenerInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	eventBindingInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    impl.Enqueue,
 		UpdateFunc: controller.PassNew(impl.Enqueue),
 	})
@@ -107,19 +109,34 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 		return err
 	}
 
+	if binding.Spec.PipelineRef.Name == "" {
+		c.logger.Error("PipelineRunSpec must not be empty")
+		return nil
+	}
+
 	// get this bindings Pipeline from PipelineRef
-	_, err = c.pipelineLister.Pipelines(namespace).Get(binding.Name) // todo: namespace???
+	c.logger.Info("retrieving associated pipeline")
+	_, err = c.pipelineLister.Pipelines(namespace).Get(binding.Spec.PipelineRef.Name) // todo: namespace???
 	if errors.IsNotFound(err) {
-		c.logger.Errorf("eventing binding specifies pipeline %q which doesnt exist")
+		c.logger.Errorf("eventing binding specifies pipeline %q which doesnt exist", binding.Spec.PipelineRef.Name)
+		return err
+	}
+	if err != nil {
+		c.logger.Errorf("error getting associated pipeline %q", err)
 		return err
 	}
 
+	c.logger.Info("Creating resource templates")
 	var pipelineResourceBindings []v1alpha1.PipelineResourceBinding
 	// Build the resource dependancies
 	for _, resource := range binding.Spec.ResourceTemplates {
 		// :dog-flying-around-in-space:
+		c.logger.Infof("getting resource templates %s", resource.Name)
+
 		_, err := c.PipelineClientSet.TektonV1alpha1().PipelineResources(resource.Namespace).Get(resource.Name, metav1.GetOptions{})
 		if err != nil && errors.IsNotFound(err) {
+			c.logger.Infof("creating resource templates %s", resource.Name)
+
 			_, err := c.PipelineClientSet.TektonV1alpha1().PipelineResources(resource.Namespace).Create(&resource)
 			if err != nil {
 				return err
@@ -163,8 +180,10 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 		},
 	}
 
+	c.logger.Info("attempting to retrieve associated tekton-listener")
 	found, err := c.PipelineClientSet.TektonV1alpha1().TektonListeners(binding.Namespace).Get(tektonListenerName, metav1.GetOptions{})
 	if err != nil && errors.IsNotFound(err) {
+		c.logger.Info("no listener found - creating new tekton-listener")
 		created, err := c.PipelineClientSet.TektonV1alpha1().TektonListeners(binding.Namespace).Create(newListener)
 		if err != nil {
 			return err

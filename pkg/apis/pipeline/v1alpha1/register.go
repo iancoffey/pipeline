@@ -46,6 +46,7 @@ var (
 // Adds the list of known types to Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
+		&EventBinding{},
 		&Task{},
 		&TaskList{},
 		&ClusterTask{},
@@ -58,6 +59,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&PipelineRunList{},
 		&PipelineResource{},
 		&PipelineResourceList{},
+		&TektonListener{},
+		&TektonListenerList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

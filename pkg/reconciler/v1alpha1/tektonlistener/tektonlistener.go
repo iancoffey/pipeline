@@ -66,7 +66,7 @@ func NewController(
 	tektonListenerInformer informers.TektonListenerInformer,
 ) *controller.Impl {
 	// Enrich the logs with controller name
-	logger, _ := logging.NewLogger("", "pipeline-listener")
+	logger, _ := logging.NewLogger("", "tekton-listener")
 
 	r := &Reconciler{
 		kubeclientset:        kubeclientset,
@@ -76,7 +76,7 @@ func NewController(
 	impl := controller.NewImpl(r, logger, "TektonListener",
 		reconciler.MustNewStatsReporter("TektonListener", r.logger))
 
-	logger.Info("Setting up pipeline-listener event handler")
+	logger.Info("Setting up tekton-listener event handler")
 	// Set up an event handler for when TektonListener resources change
 	tektonListenerInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    impl.Enqueue,
@@ -88,7 +88,7 @@ func NewController(
 
 // Reconcile will create the necessary statefulset to manage the listener process
 func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
-	c.logger.Info("pipeline-listener-reconcile")
+	c.logger.Info("tekton-listener-reconcile")
 
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
@@ -102,6 +102,11 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 		return nil
 	} else if err != nil {
 		return err
+	}
+
+	if pl.Spec.PipelineRunSpec == (&v1alpha1.PipelineRunSpec{}) {
+		c.logger.Error("PipelineRunSpec must not be empty")
+		return nil
 	}
 
 	pl = pl.DeepCopy()
@@ -135,7 +140,7 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 		},
 	}
 
-	c.logger.Infof("launching pipeline-listener %s with type: %s namespace: %s",
+	c.logger.Infof("launching tekton-listener %s with type: %s namespace: %s",
 		pl.Name,
 		pl.Spec.EventType,
 		pl.Spec.Namespace,
@@ -160,7 +165,7 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 					ServiceAccountName: pl.Spec.PipelineRunSpec.ServiceAccount,
 					Containers: []corev1.Container{
 						{
-							Name:  "pipeline-listener",
+							Name:  "tekton-listener",
 							Image: *listenerImage,
 							Env:   containerEnv,
 							Ports: []corev1.ContainerPort{

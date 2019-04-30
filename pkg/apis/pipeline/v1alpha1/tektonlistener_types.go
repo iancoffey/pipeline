@@ -33,7 +33,7 @@ type TektonListenerSpec struct {
 	// The namespace the listener and pipelineruns should be created in
 	Namespace string `json:"namespace"`
 	// The spec of the desired pipeline run
-	PipelineRunSpec *PipelineRunSpec `json:"pipelinerunspec"`
+	PipelineRunSpec *PipelineRunSpec `json:"runspec"`
 	// The status of the listener
 	TektonListenerSpecStatus string `json:"pipelinespecstatus"`
 }

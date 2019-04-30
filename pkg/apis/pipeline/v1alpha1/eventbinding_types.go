@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
+
 	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -28,7 +30,7 @@ type EventBindingSpec struct {
 	// The source we are creating this binding to handle
 	SourceRef SourceRef `json:"sourceref"`
 	// The resources that will be created/deleted for this binding
-	ResourceTemplates []PipelineResource `json:"resourceref"`
+	ResourceTemplates []PipelineResource `json:"resourceTemplates"`
 	// The resources to bind the PipelineRun to
 	Resources []PipelineResourceBinding `json:"resources"`
 	// Params is a list of parameter names and values for use with the PipelineRun
@@ -91,3 +93,6 @@ type EventRef struct {
 	EventType  string `json:"eventtype,inline"`
 	APIVersion string `json:"apiversion,omitempty"`
 }
+
+// SetDefaults for pipelinerun
+func (e *EventBinding) SetDefaults(ctx context.Context) {}

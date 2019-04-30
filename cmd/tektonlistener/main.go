@@ -157,7 +157,7 @@ func (r *EventListener) handleCheckSuite(event cloudevents.Event, cs *gh.CheckSu
 	if cs.CheckSuite.Conclusion == "success" {
 		build, err := r.createPipelineRun(cs.CheckSuite.HeadSHA)
 		if err != nil {
-			return errors.Wrapf(err, "Error creating pipeline run for check_suite event ID: %q", event.Context.AsV02().ID)
+			return errors.Wrapf(err, "Error creating pipeline run for check_suite event ID: %q", event.ID())
 		}
 
 		log.Printf("Created pipeline run %q!", build.Name)
